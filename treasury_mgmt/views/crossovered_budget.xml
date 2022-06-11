@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_budget_enhancement_tree" model="ir.ui.view">
+            <field name="name">Budget Enhancement</field>
+            <field name="model">crossovered.budget.lines</field>
+            <field name="inherit_id" ref="account_budget.view_crossovered_budget_line_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='planned_amount']" position="after">
+                    <field name="draft_burden"/>
+                    <field name="approved_burden"/>
+                    <field name="released_burden"/>
+                    <field name="closed_burden"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
