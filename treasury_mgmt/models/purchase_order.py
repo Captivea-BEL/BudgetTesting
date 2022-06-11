@@ -31,7 +31,8 @@ class PurchaseOrder(models.Model):
     ('to approve', 'TO REAPPROVE'),
     ('purchase', 'APPROVED'),
     ('released', 'RELEASED'),
-    ('done', 'CLOSED')
+    ('done', 'CLOSED'),
+    ('cancel', 'CANCELLED') 
     ], string='Status', readonly=True, index=True, copy=False, default='draft', tracking=True)
 
 

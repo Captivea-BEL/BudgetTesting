@@ -18,13 +18,10 @@
 ########################################################################################
 
 from odoo import models, fields, api
-from odoo.exceptions import UserError
-import logging
-_logger = logging.getLogger(__name__)
+from datetime import datetime
 
 class Budget(models.Model):
     _inherit = 'crossovered.budget.lines'
-
 
     draft_burden = fields.Float(string='Draft Burden', compute="compute_draft_burden",
                                  help="TODO Help Text")
@@ -36,20 +33,84 @@ class Budget(models.Model):
                                   help="TODO Help Text")
   
     def compute_draft_burden(self):
-        for rec in self:
-            rec.draft_burden = 1
+        for rec in self: 
+            start_time = datetime.min.time()
+            start_date = datetime.combine(rec.date_from, start_time)
+            end_time = datetime.max.time()
+            end_date = datetime.combine(rec.date_to, end_time)         
+            po_lines = self.env['purchase.order.line'].search([
+                ('account_analytic_id','=', rec.analytic_account_id.id),
+                ('order_id.state','in', ['draft','sent','to approve']),
+                ('order_id.date_approve', '>=', start_date ),
+                ('order_id.date_approve', '<=', end_date )
+            ])
+            total_burden = 0.0
+            for po_line in po_lines:
+                if po_line.product_qty != 0:
+                    tax = po_line.price_tax*po_line.qty_invoiced/po_line.product_qty
+                    subtotal = po_line.price_unit*po_line.qty_invoiced/po_line.product_qty
+                    total_burden += tax + subtotal
+            rec.draft_burden = total_burden
 
     def compute_approved_durden(self):
-        for rec in self:
-            rec.approved_burden = 1
+        for rec in self: 
+            start_time = datetime.min.time()
+            start_date = datetime.combine(rec.date_from, start_time)
+            end_time = datetime.max.time()
+            end_date = datetime.combine(rec.date_to, end_time)         
+            po_lines = self.env['purchase.order.line'].search([
+                ('account_analytic_id','=', rec.analytic_account_id.id),
+                ('order_id.state','in', ['purchase']),
+                ('order_id.date_approve', '>=', start_date ),
+                ('order_id.date_approve', '<=', end_date )
+            ])
+            total_burden = 0.0
+            for po_line in po_lines:
+                if po_line.product_qty != 0:
+                    tax = po_line.price_tax*po_line.qty_invoiced/po_line.product_qty
+                    subtotal = po_line.price_unit*po_line.qty_invoiced/po_line.product_qty
+                    total_burden += tax + subtotal
+            rec.approved_burden = total_burden
 
     def compute_released_burden(self):
-        for rec in self:
-            rec.released_burden = 1
+        for rec in self: 
+            start_time = datetime.min.time()
+            start_date = datetime.combine(rec.date_from, start_time)
+            end_time = datetime.max.time()
+            end_date = datetime.combine(rec.date_to, end_time)         
+            po_lines = self.env['purchase.order.line'].search([
+                ('account_analytic_id','=', rec.analytic_account_id.id),
+                ('order_id.state','in', ['released']),
+                ('order_id.date_approve', '>=', start_date ),
+                ('order_id.date_approve', '<=', end_date )
+            ])
+            total_burden = 0.0
+            for po_line in po_lines:
+                if po_line.product_qty != 0:
+                    tax = po_line.price_tax*po_line.qty_invoiced/po_line.product_qty
+                    subtotal = po_line.price_unit*po_line.qty_invoiced/po_line.product_qty
+                    total_burden += tax + subtotal
+            rec.released_burden = total_burden
 
     def compute_closed_burden(self):
-        for rec in self:
-            rec.closed_burden = 1
+        for rec in self: 
+            start_time = datetime.min.time()
+            start_date = datetime.combine(rec.date_from, start_time)
+            end_time = datetime.max.time()
+            end_date = datetime.combine(rec.date_to, end_time)         
+            po_lines = self.env['purchase.order.line'].search([
+                ('account_analytic_id','=', rec.analytic_account_id.id),
+                ('order_id.state','in', ['done']),
+                ('order_id.date_approve', '>=', start_date ),
+                ('order_id.date_approve', '<=', end_date )
+            ])
+            total_burden = 0.0
+            for po_line in po_lines:
+                if po_line.product_qty != 0:
+                    tax = po_line.price_tax*po_line.qty_invoiced/po_line.product_qty
+                    subtotal = po_line.price_unit*po_line.qty_invoiced/po_line.product_qty
+                    total_burden += tax + subtotal
+            rec.closed_burden = total_burden
 
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
