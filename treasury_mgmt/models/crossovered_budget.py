@@ -47,8 +47,9 @@ class Budget(models.Model):
             total_burden = 0.0
             for po_line in po_lines:
                 if po_line.product_qty != 0:
-                    tax = po_line.price_tax*po_line.qty_invoiced/po_line.product_qty
-                    subtotal = po_line.price_unit*po_line.qty_invoiced/po_line.product_qty
+                    units = (po_line.product_qty - po_line.qty_invoiced)
+                    tax = po_line.price_tax/po_line.product_qty * units
+                    subtotal = po_line.price_unit * units
                     total_burden += tax + subtotal
             rec.draft_burden = total_burden
 
@@ -67,8 +68,9 @@ class Budget(models.Model):
             total_burden = 0.0
             for po_line in po_lines:
                 if po_line.product_qty != 0:
-                    tax = po_line.price_tax*po_line.qty_invoiced/po_line.product_qty
-                    subtotal = po_line.price_unit*po_line.qty_invoiced/po_line.product_qty
+                    units = (po_line.product_qty - po_line.qty_invoiced)
+                    tax = po_line.price_tax/po_line.product_qty * units
+                    subtotal = po_line.price_unit * units
                     total_burden += tax + subtotal
             rec.approved_burden = total_burden
 
@@ -87,8 +89,9 @@ class Budget(models.Model):
             total_burden = 0.0
             for po_line in po_lines:
                 if po_line.product_qty != 0:
-                    tax = po_line.price_tax*po_line.qty_invoiced/po_line.product_qty
-                    subtotal = po_line.price_unit*po_line.qty_invoiced/po_line.product_qty
+                    units = (po_line.product_qty - po_line.qty_invoiced)
+                    tax = po_line.price_tax/po_line.product_qty * units
+                    subtotal = po_line.price_unit * units
                     total_burden += tax + subtotal
             rec.released_burden = total_burden
 
@@ -107,8 +110,9 @@ class Budget(models.Model):
             total_burden = 0.0
             for po_line in po_lines:
                 if po_line.product_qty != 0:
-                    tax = po_line.price_tax*po_line.qty_invoiced/po_line.product_qty
-                    subtotal = po_line.price_unit*po_line.qty_invoiced/po_line.product_qty
+                    units = (po_line.product_qty - po_line.qty_invoiced)
+                    tax = po_line.price_tax/po_line.product_qty * units
+                    subtotal = po_line.price_unit * units
                     total_burden += tax + subtotal
             rec.closed_burden = total_burden
 
