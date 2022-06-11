@@ -2,7 +2,23 @@
 <odoo>
     <data>
         <record id="view_budget_enhancement_tree" model="ir.ui.view">
-            <field name="name">Budget Enhancement</field>
+            <field name="name">account.budget.enhancement.tree</field>
+            <field name="model">crossovered.budget.lines</field>
+            <field name="inherit_id" ref="account_budget.view_crossovered_budget_line_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='practical_amount']" position="after">
+                    <field name="draft_burden"/>
+                    <field name="approved_burden"/>
+                    <field name="released_burden"/>
+                    <field name="closed_burden"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+
+    <data>
+        <record id="view_budget_enhancement_form" model="ir.ui.view">
+            <field name="name">account.budget.enhancement.form</field>
             <field name="model">crossovered.budget.lines</field>
             <field name="inherit_id" ref="account_budget.view_crossovered_budget_line_form"/>
             <field name="arch" type="xml">
@@ -15,4 +31,5 @@
             </field>
         </record>
     </data>
+
 </odoo>

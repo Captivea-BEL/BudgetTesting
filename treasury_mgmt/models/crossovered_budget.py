@@ -41,13 +41,13 @@ class Budget(models.Model):
 
     def compute_approved_durden(self):
         for rec in self:
-            rec.draft_burden = 1
+            rec.approved_burden = 1
 
     def compute_released_burden(self):
         for rec in self:
-            rec.draft_burden = 1
+            rec.released_burden = 1
 
     def compute_closed_burden(self):
         for rec in self:
-            rec.draft_burden = 1
+            rec.closed_burden = 1
 
