@@ -34,16 +34,14 @@ class Budget(models.Model):
                                   help="Amount that is spent on a closed purchase order")
     total_burden = fields.Float(string='Total Burden', compute="compute_total_burden",
                                   help="The total amount that is spent on all stages of a purchase order")
-    practical_amount = fields.Monetary(string='ABS Practical Amount', compute='_compute_practical_amount',
+    abs_practical_amount = fields.Monetary(string='ABS Practical Amount', compute='_compute_abs_practical_amount',
                                     help="Amount really earned/spent.")
-    theoritical_amount = fields.Monetary(string='ABS Theoretical Amount', compute='_compute_theoritical_amount',
+    abs_theoritical_amount = fields.Monetary(string='ABS Theoretical Amount', compute='_compute_abs_theoritical_amount',
                                     help="Amount you are supposed to have earned/spent at this date.")
+    abs_planned_amount = fields.Monetary(string='ABS Planned Amount', compute='_compute_abs_planned_amount',
+                                    help="Amount you plan to earn/spend. Record a positive amount if it is a revenue and a negative amount if it is a cost.")
 
-    @api.constrains('planned_amount')
-    def _check_planned_amount(self):
-        for record in self:
-            if record.planned_amount < 0:
-                raise ValidationError("Planned amount for these budget lines must be greater than 0")
+
 
     def compute_draft_burden(self):
         for rec in self: 
@@ -130,67 +128,20 @@ class Budget(models.Model):
             rec.total_burden = total
 
 
-    @api.depends('date_from', 'date_to')
-    def _compute_theoritical_amount(self):
-        today = fields.Date.today()
-        for line in self:
-            if line.paid_date:
-                if today <= line.paid_date:
-                    theo_amt = 0.00
-                else:
-                    theo_amt = line.planned_amount
-            else:
-                if not line.date_from or not line.date_to:
-                    line.theoritical_amount = 0
-                    continue
-                line_timedelta = line.date_to - line.date_from + timedelta(days=1)
-                elapsed_timedelta = today - line.date_from + timedelta(days=1)
+    @api.depends('theoritical_amount')
+    def _compute_abs_theoritical_amountt(self):
+        for rec in self:
+            rec.abs_theoritical_amount = rec.theoritical_amount
+            
+    @api.depends('practical_amount')
+    def _compute_abs_practical_amount(self):
+        for rec in self:
+            rec.abs_practical_amount = rec.practical_amount
 
-                if elapsed_timedelta.days < 0:
-                    theo_amt = 0.00
-                elif line_timedelta.days > 0 and today < line.date_to:
-                    theo_amt = (elapsed_timedelta.total_seconds() / line_timedelta.total_seconds()) * line.planned_amount
-                else:
-                    theo_amt = line.planned_amount
-            line.theoritical_amount = abs(theo_amt)
-
-    def _compute_practical_amount(self):
-        for line in self:
-            acc_ids = line.general_budget_id.account_ids.ids
-            date_to = line.date_to
-            date_from = line.date_from
-            if line.analytic_account_id.id:
-                analytic_line_obj = self.env['account.analytic.line']
-                domain = [('account_id', '=', line.analytic_account_id.id),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to),
-                          ]
-                if acc_ids:
-                    domain += [('general_account_id', 'in', acc_ids)]
-
-                where_query = analytic_line_obj._where_calc(domain)
-                analytic_line_obj._apply_ir_rules(where_query, 'read')
-                from_clause, where_clause, where_clause_params = where_query.get_sql()
-                select = "SELECT SUM(amount) from " + from_clause + " where " + where_clause
-
-            else:
-                aml_obj = self.env['account.move.line']
-                domain = [('account_id', 'in',
-                           line.general_budget_id.account_ids.ids),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to),
-                          ('move_id.state', '=', 'posted')
-                          ]
-                where_query = aml_obj._where_calc(domain)
-                aml_obj._apply_ir_rules(where_query, 'read')
-                from_clause, where_clause, where_clause_params = where_query.get_sql()
-                select = "SELECT sum(credit)-sum(debit) from " + from_clause + " where " + where_clause
-
-            self.env.cr.execute(select, where_clause_params)
-            line.practical_amount = abs(self.env.cr.fetchone()[0]) or 0.0
-
-
-
+    @api.depends('planned_amount')
+    def _compute_abs_planned_amount(self):
+        for rec in self:
+            rec.abs_planned_amount = rec.planned_amount
 
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):        
