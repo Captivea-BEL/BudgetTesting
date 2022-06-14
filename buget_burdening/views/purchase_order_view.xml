@@ -6,12 +6,12 @@
             <field name="model">purchase.order</field>
             <field name="inherit_id" ref="purchase.purchase_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='partner_ref']" position="after">
-                    <field name="id" string="TODO Delete Me"/>
-                </xpath>
+                <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='products']/field[@name='order_line']/tree[1]/field[@name='product_qty']" position="after">
+                    <field name="date_promised"/>
+                </xpath>  
                 <xpath expr="//field[@name='state']" position="replace" >
                     <field name="state" widget="statusbar" statusbar_visible="draft,sent,to approve,purchase,released,done" readonly="1"/>
-                </xpath>    
+                </xpath>
             </field>
         </record>
     </data>

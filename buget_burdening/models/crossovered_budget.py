@@ -24,15 +24,15 @@ class Budget(models.Model):
     _inherit = 'crossovered.budget.lines'
 
     draft_burden = fields.Float(string='Draft Burden', compute="compute_draft_burden",
-                                 help="TODO Help Text")
+                                 help="Amount that is spent on a draft purchase order")
     approved_burden = fields.Float(string='Approved Burden', compute="compute_approved_durden",
-                                  help="TODO Help Text")
+                                  help="Amount that is spent on an approved purchase order")
     released_burden = fields.Float(string='Released Burden', compute="compute_released_burden",
-                                  help="TODO Help Text")
+                                  help="Amount that is spent on a released purchase order")
     closed_burden = fields.Float(string='Closed Burden', compute="compute_closed_burden",
-                                  help="TODO Help Text")
+                                  help="Amount that is spent on a closed purchase order")
     total_burden = fields.Float(string='Total Burden', compute="compute_total_burden",
-                                  help="TODO Help Text")
+                                  help="The total amount that is spent on all stages of a purchase order")
 
     def compute_draft_burden(self):
         for rec in self: 
@@ -43,15 +43,15 @@ class Budget(models.Model):
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
                 ('order_id.state','in', ['draft','sent','to approve', 'to reapprove']),
-                ('date_order', '>=', start_date ),
-                ('date_order', '<=', end_date )
+                ('date_promised', '>=', start_date ),
+                ('date_promised', '<=', end_date )
             ])
             total_burden = 0.0
             for po_line in po_lines:
                 if po_line.product_qty != 0:
                     units = (po_line.product_qty - po_line.qty_invoiced)
                     total_burden += po_line.price_unit * units
-            rec.draft_burden = total_burden*-1
+            rec.draft_burden = total_burden
 
     def compute_approved_durden(self):
         for rec in self: 
@@ -62,15 +62,15 @@ class Budget(models.Model):
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
                 ('order_id.state','in', ['approved']),
-                ('date_order', '>=', start_date ),
-                ('date_order', '<=', end_date )
+                ('date_promised', '>=', start_date ),
+                ('date_promised', '<=', end_date )
             ])
             total_burden = 0.0
             for po_line in po_lines:
                 if po_line.product_qty != 0:
                     units = (po_line.product_qty - po_line.qty_invoiced)
                     total_burden += po_line.price_unit * units
-            rec.approved_burden = total_burden*-1
+            rec.approved_burden = total_burden
 
     def compute_released_burden(self):
         for rec in self: 
@@ -81,15 +81,15 @@ class Budget(models.Model):
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
                 ('order_id.state','in', ['purchase']),
-                ('date_order', '>=', start_date ),
-                ('date_order', '<=', end_date )
+                ('date_promised', '>=', start_date ),
+                ('date_promised', '<=', end_date )
             ])
             total_burden = 0.0
             for po_line in po_lines:
                 if po_line.product_qty != 0:
                     units = (po_line.product_qty - po_line.qty_invoiced)
                     total_burden += po_line.price_unit * units
-            rec.released_burden = total_burden*-1
+            rec.released_burden = total_burden
 
     def compute_closed_burden(self):
         for rec in self: 
@@ -100,25 +100,22 @@ class Budget(models.Model):
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
                 ('order_id.state','in', ['done', 'closed']),
-                ('date_order', '>=', start_date ),
-                ('date_order', '<=', end_date )
+                ('date_promised', '>=', start_date ),
+                ('date_promised', '<=', end_date )
             ])
             total_burden = 0.0
             for po_line in po_lines:
                 if po_line.product_qty != 0:
                     units = (po_line.product_qty - po_line.qty_invoiced)
                     total_burden += po_line.price_unit * units
-            rec.closed_burden = total_burden*-1
+            rec.closed_burden = total_burden
     
     def compute_total_burden(self):
         for rec in self: 
             amounts = [rec.practical_amount, rec.released_burden, rec.approved_burden, rec.draft_burden, rec.closed_burden]
             total = 0
             for amount in amounts:
-                if amount < 0:
-                    total -= amount
-                else:
-                    total += amount
+                total += abs(amount)
             rec.total_burden = total
 
     @api.model
@@ -179,7 +176,7 @@ class Budget(models.Model):
                     if 'closed_burden' in fields or 'percentage' in fields:
                         group_line['closed_burden'] += budget_line_of_group.closed_burden
                     if 'total_burden' in fields or 'percentage' in fields:
-                        group_line['total_burden'] += budget_line_of_group.practical_amount
+                        group_line['total_burden'] += budget_line_of_group.total_burden
                     if 'theoritical_amount' in fields or 'percentage' in fields:
                         group_line['theoritical_amount'] += budget_line_of_group.theoritical_amount
                     if 'percentage' in fields:
