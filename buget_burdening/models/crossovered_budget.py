@@ -131,17 +131,17 @@ class Budget(models.Model):
     @api.depends('theoritical_amount')
     def _compute_abs_theoritical_amountt(self):
         for rec in self:
-            rec.abs_theoritical_amount = rec.theoritical_amount
+            rec.abs_theoritical_amount = abs(rec.theoritical_amount)
             
     @api.depends('practical_amount')
     def _compute_abs_practical_amount(self):
         for rec in self:
-            rec.abs_practical_amount = rec.practical_amount
+            rec.abs_practical_amount = abs(rec.practical_amount)
 
     @api.depends('planned_amount')
     def _compute_abs_planned_amount(self):
         for rec in self:
-            rec.abs_planned_amount = rec.planned_amount
+            rec.abs_planned_amount = abs(rec.planned_amount)
 
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):        
@@ -166,9 +166,10 @@ class Budget(models.Model):
 
         if fields & fields_list:
             for group_line in result:
-
-                if 'practical_amount' in fields:
-                    group_line['practical_amount'] = 0
+                if 'abs_planned_amount' in fields:
+                    group_line['abs_planned_amount'] = 0
+                if 'abs_practical_amount' in fields:
+                    group_line['abs_practical_amount'] = 0
                 if 'draft_burden' in fields:
                     group_line['draft_burden'] = 0
                 if 'approved_burden' in fields:
@@ -179,19 +180,21 @@ class Budget(models.Model):
                     group_line['closed_burden'] = 0
                 if 'total_burden' in fields:
                     group_line['total_burden'] = 0
-                if 'theoritical_amount' in fields:
-                    group_line['theoritical_amount'] = 0
+                if 'abs_theoritical_amount' in fields:
+                    group_line['abs_theoritical_amount'] = 0
                 if 'percentage' in fields:
                     group_line['percentage'] = 0
-                    group_line['practical_amount'] = 0
-                    group_line['theoritical_amount'] = 0
+                    group_line['abs_practical_amount'] = 0
+                    group_line['abs_theoritical_amount'] = 0
 
                 domain = group_line.get('__domain') or domain
                 all_budget_lines_that_compose_group = self.search(domain)
 
                 for budget_line_of_group in all_budget_lines_that_compose_group:
-                    if 'practical_amount' in fields or 'percentage' in fields:
-                        group_line['practical_amount'] += budget_line_of_group.practical_amount
+                    if 'abs_planned_amount' in fields or 'percentage' in fields:
+                        group_line['abs_planned_amount'] += budget_line_of_group.abs_planned_amount
+                    if 'abs_practical_amount' in fields or 'percentage' in fields:
+                        group_line['abs_practical_amount'] += budget_line_of_group.abs_practical_amount
                     if 'draft_burden' in fields or 'percentage' in fields:
                         group_line['draft_burden'] += budget_line_of_group.draft_burden
                     if 'approved_burden' in fields or 'percentage' in fields:
@@ -202,10 +205,10 @@ class Budget(models.Model):
                         group_line['closed_burden'] += budget_line_of_group.closed_burden
                     if 'total_burden' in fields or 'percentage' in fields:
                         group_line['total_burden'] += budget_line_of_group.total_burden
-                    if 'theoritical_amount' in fields or 'percentage' in fields:
-                        group_line['theoritical_amount'] += budget_line_of_group.theoritical_amount
+                    if 'abs_theoritical_amount' in fields or 'percentage' in fields:
+                        group_line['abs_theoritical_amount'] += budget_line_of_group.abs_theoritical_amount
                     if 'percentage' in fields:
-                        if group_line['theoritical_amount']:
+                        if group_line['abs_theoritical_amount']:
                             group_line['percentage'] = float(
-                                (group_line['practical_amount'] or 0.0) / group_line['theoritical_amount'])
+                                (group_line['abs_practical_amount'] or 0.0) / group_line['abs_theoritical_amount'])
         return result       
