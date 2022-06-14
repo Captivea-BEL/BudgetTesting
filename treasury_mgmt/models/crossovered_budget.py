@@ -112,7 +112,7 @@ class Budget(models.Model):
     
     def compute_total_burden(self):
         for rec in self: 
-            rec.total_burden = rec.total_burden + rec.total_burden + rec.total_burden + rec.total_burden + rec.total_burden
+            rec.total_burden = rec.practical_amount + rec.total_burden + rec.total_burden + rec.total_burden + rec.total_burden
 
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):        
