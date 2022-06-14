@@ -32,8 +32,8 @@ class PurchaseOrder(models.Model):
     ('to reapprove', 'To Reapprove'),
     ('approved', 'Approved'),
     ('purchase', 'Released'),
-    ('cancel', 'Cancelled') 
-    ('revised', 'Revised') 
+    ('cancel', 'Cancelled'),
+    ('revised', 'Revised'),
     ('done', 'Locked'),
     ('closed', 'Closed'),
     
