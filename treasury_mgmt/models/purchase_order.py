@@ -28,11 +28,16 @@ class PurchaseOrder(models.Model):
     state = fields.Selection([
     ('draft', 'DRAFT PO'),
     ('sent', 'DRAFT PO SENT'),
-    ('to approve', 'TO REAPPROVE'),
-    ('purchase', 'APPROVED'),
+    ('to approve', 'TO APPROVE'),
+    ('to reapprove', 'TO REAPPROVE'),
+    ('approved', 'Approved'),
+    ('purchase', 'Released'),
     ('released', 'RELEASED'),
-    ('done', 'CLOSED'),
-    ('cancel', 'CANCELLED') 
+    ('cancel', 'Cancelled') 
+    ('revised', 'Revised') 
+    ('done', 'Locked'),
+    ('closed', 'Closed'),
+    
     ], string='Status', readonly=True, index=True, copy=False, default='draft', tracking=True)
 
 
