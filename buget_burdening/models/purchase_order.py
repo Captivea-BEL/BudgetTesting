@@ -17,9 +17,7 @@
 #
 ########################################################################################
 
-from pickle import TRUE
-from typing_extensions import Required
-from odoo import models, fields, api
+from odoo import models, fields
 
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
@@ -41,7 +39,7 @@ class PurchaseOrder(models.Model):
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order.line'
 
-    date_promised = fields.Date(string='Promise Date', Required = True, copy=True)
+    date_promised = fields.Date(string='Promise Date', required=True, copy=True)
 
 
 
