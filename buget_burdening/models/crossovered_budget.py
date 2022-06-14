@@ -129,7 +129,7 @@ class Budget(models.Model):
 
 
     @api.depends('theoritical_amount')
-    def _compute_abs_theoritical_amountt(self):
+    def _compute_abs_theoritical_amount(self):
         for rec in self:
             rec.abs_theoritical_amount = abs(rec.theoritical_amount)
             
