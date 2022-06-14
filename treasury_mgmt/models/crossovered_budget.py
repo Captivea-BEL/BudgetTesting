@@ -116,9 +116,9 @@ class Budget(models.Model):
             total = 0
             for amount in amounts:
                 if amount < 0:
-                    total = rec.total_burden - amount
+                    total -= amount
                 else:
-                    total = rec.total_burden + amount
+                    total += amount
             rec.total_burden = total
 
     @api.model
