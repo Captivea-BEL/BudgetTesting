@@ -51,7 +51,7 @@ class Budget(models.Model):
                 if po_line.product_qty != 0:
                     units = (po_line.product_qty - po_line.qty_invoiced)
                     total_burden += po_line.price_unit * units
-            rec.closed_burden = total_burden*-1
+            rec.draft_burden = total_burden*-1
 
     def compute_approved_durden(self):
         for rec in self: 
@@ -70,7 +70,7 @@ class Budget(models.Model):
                 if po_line.product_qty != 0:
                     units = (po_line.product_qty - po_line.qty_invoiced)
                     total_burden += po_line.price_unit * units
-            rec.closed_burden = total_burden*-1
+            rec.approved_burden = total_burden*-1
 
     def compute_released_burden(self):
         for rec in self: 
@@ -89,7 +89,7 @@ class Budget(models.Model):
                 if po_line.product_qty != 0:
                     units = (po_line.product_qty - po_line.qty_invoiced)
                     total_burden += po_line.price_unit * units
-            rec.closed_burden = total_burden*-1
+            rec.released_burden = total_burden*-1
 
     def compute_closed_burden(self):
         for rec in self: 
