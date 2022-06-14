@@ -7,11 +7,11 @@
             <field name="inherit_id" ref="account_budget.view_crossovered_budget_line_tree"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='practical_amount']" position="after">
-                    <field name="draft_burden"/>
-                    <field name="approved_burden"/>
-                    <field name="released_burden"/>
-                    <field name="closed_burden"/>
-                    <field name="total_burden"/>
+                    <field name="draft_burden" optional="hide"/>
+                    <field name="approved_burden" optional="hide"/>
+                    <field name="released_burden" optional="hide"/>
+                    <field name="closed_burden" optional="hide"/>
+                    <field name="total_burden" optional="hide"/>
                 </xpath>
             </field>
         </record>
