@@ -43,8 +43,8 @@ class Budget(models.Model):
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
                 ('order_id.state','in', ['draft','sent','to approve', 'to reapprove']),
-                ('date_promised', '>=', start_date ),
-                ('date_promised', '<=', end_date )
+                ('date_order', '>=', start_date ),
+                ('date_order', '<=', end_date )
             ])
             total_burden = 0.0
             for po_line in po_lines:
@@ -62,8 +62,8 @@ class Budget(models.Model):
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
                 ('order_id.state','in', ['approved']),
-                ('date_promised', '>=', start_date ),
-                ('date_promised', '<=', end_date )
+                ('date_order', '>=', start_date ),
+                ('date_order', '<=', end_date )
             ])
             total_burden = 0.0
             for po_line in po_lines:
@@ -81,8 +81,8 @@ class Budget(models.Model):
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
                 ('order_id.state','in', ['purchase']),
-                ('date_promised', '>=', start_date ),
-                ('date_promised', '<=', end_date )
+                ('date_order', '>=', start_date ),
+                ('date_order', '<=', end_date )
             ])
             total_burden = 0.0
             for po_line in po_lines:
@@ -100,8 +100,8 @@ class Budget(models.Model):
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
                 ('order_id.state','in', ['done', 'closed']),
-                ('date_promised', '>=', start_date ),
-                ('date_promised', '<=', end_date )
+                ('date_order', '>=', start_date ),
+                ('date_order', '<=', end_date )
             ])
             total_burden = 0.0
             for po_line in po_lines:
