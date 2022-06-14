@@ -26,13 +26,12 @@ class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
     state = fields.Selection([
-    ('draft', 'DRAFT PO'),
-    ('sent', 'DRAFT PO SENT'),
-    ('to approve', 'TO APPROVE'),
-    ('to reapprove', 'TO REAPPROVE'),
+    ('draft', 'Draft PO'),
+    ('sent', 'Draft PO Sent'),
+    ('to approve', 'To Approve'),
+    ('to reapprove', 'To Reapprove'),
     ('approved', 'Approved'),
     ('purchase', 'Released'),
-    ('released', 'RELEASED'),
     ('cancel', 'Cancelled') 
     ('revised', 'Revised') 
     ('done', 'Locked'),

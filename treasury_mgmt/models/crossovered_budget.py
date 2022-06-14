@@ -33,7 +33,7 @@ class Budget(models.Model):
                                   help="TODO Help Text")
     total_burden = fields.Float(string='Total Burden', compute="compute_total_burden",
                                   help="TODO Help Text")
-  
+
     def compute_draft_burden(self):
         for rec in self: 
             start_time = datetime.min.time()
@@ -42,7 +42,7 @@ class Budget(models.Model):
             end_date = datetime.combine(rec.date_to, end_time)         
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
-                ('order_id.state','in', ['draft','sent','to approve']),
+                ('order_id.state','in', ['draft','sent','to approve', 'to reapprove']),
                 ('date_promised', '>=', start_date ),
                 ('date_promised', '<=', end_date )
             ])
@@ -61,7 +61,7 @@ class Budget(models.Model):
             end_date = datetime.combine(rec.date_to, end_time)         
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
-                ('order_id.state','in', ['purchase']),
+                ('order_id.state','in', ['approved']),
                 ('date_promised', '>=', start_date ),
                 ('date_promised', '<=', end_date )
             ])
@@ -80,7 +80,7 @@ class Budget(models.Model):
             end_date = datetime.combine(rec.date_to, end_time)         
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
-                ('order_id.state','in', ['released']),
+                ('order_id.state','in', ['purchase']),
                 ('date_promised', '>=', start_date ),
                 ('date_promised', '<=', end_date )
             ])
@@ -99,7 +99,7 @@ class Budget(models.Model):
             end_date = datetime.combine(rec.date_to, end_time)         
             po_lines = self.env['purchase.order.line'].search([
                 ('account_analytic_id','=', rec.analytic_account_id.id),
-                ('order_id.state','in', ['done']),
+                ('order_id.state','in', ['done', 'closed']),
                 ('date_promised', '>=', start_date ),
                 ('date_promised', '<=', end_date )
             ])
@@ -115,8 +115,7 @@ class Budget(models.Model):
             rec.total_burden = rec.total_burden + rec.total_burden + rec.total_burden + rec.total_burden + rec.total_burden
 
     @api.model
-    def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
-        # overrides the default read_group in order to compute the computed fields manually for the group
+    def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):        
         fields_list = {
             'practical_amount', 
             'draft_burden', 
@@ -127,7 +126,6 @@ class Budget(models.Model):
             'theoritical_amount', 
             'percentage'}
 
-        # Not any of the fields_list support aggregate function like :sum
         def truncate_aggr(field):
             field_no_aggr = field.split(':', 1)[0]
             if field_no_aggr in fields_list:
@@ -135,14 +133,11 @@ class Budget(models.Model):
             return field
         fields = {truncate_aggr(field) for field in fields}
 
-        # Read non fields_list fields
         result = super(Budget, self).read_group(domain, list(fields - fields_list), groupby, offset=offset, limit=limit, orderby=orderby, lazy=lazy)
 
-        # Populate result with fields_list values
         if fields & fields_list:
             for group_line in result:
 
-                # initialise fields to compute to 0 if they are requested
                 if 'practical_amount' in fields:
                     group_line['practical_amount'] = 0
                 if 'draft_burden' in fields:
@@ -182,7 +177,6 @@ class Budget(models.Model):
                         group_line['theoritical_amount'] += budget_line_of_group.theoritical_amount
                     if 'percentage' in fields:
                         if group_line['theoritical_amount']:
-                            # use a weighted average
                             group_line['percentage'] = float(
                                 (group_line['practical_amount'] or 0.0) / group_line['theoritical_amount'])
         return result       
