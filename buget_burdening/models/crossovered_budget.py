@@ -18,8 +18,7 @@
 ########################################################################################
 
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class Budget(models.Model):
     _inherit = 'crossovered.budget.lines'
