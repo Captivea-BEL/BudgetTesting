@@ -48,7 +48,7 @@ class PurchaseOrder(models.Model):
             min_time = datetime.min.time()
             po_date = datetime.combine(self.date_promised, min_time)
             budget = self.env['crossovered.budget.lines'].search([
-                ('analytic_account_id','=', self.analytic_account_id.id),
+                ('analytic_account_id','=', self.account_analytic_id.id),
                 ('date_from', '>=', po_date ),
                 ('date_to', '<=', po_date )
             ])
