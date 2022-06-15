@@ -58,27 +58,27 @@ class PurchaseOrder(models.Model):
                     ('date_promised', '>=', budget.date_from ),
                     ('date_promised', '<=', budget.date_to )
                 ])
+                budget.draft_burden = self.sum_lines(po_lines.filtered(lambda line: line.order_id.state in ['draft','sent','to approve', 'to reapprove']))
+                budget.approved_burden = self.sum_lines(po_lines.filtered(lambda line: line.order_id.state in ['approved']))
+                budget.released_burden = po_lines.filtered(lambda line: line.order_id.state in ['purchase'])
+                budget.closed_burden = po_lines.filtered(lambda line: line.order_id.state in ['done', 'closed'])
+                budget.abs_theoritical_amount = abs(budget.abs_theoritical_amount)
+                budget.abs_practical_amount = abs(budget.abs_practical_amount)
+                budget.abs_planned_amount = abs(budget.abs_planned_amount)
+                
+                
+                budget.total_burden = budget.draft_burden + budget.approved_burden + budget.released_burden + budget.closed_burden + budget.practical
+
+    def sum_lines(po_lines):
+        total_burden = 0.0
+        for po_line in po_lines:
+            if po_line.product_qty != 0:
+                units = (po_line.product_qty - po_line.qty_invoiced)
+                total_burden += po_line.price_unit * units
+        return total_burden
 
 
 
-
-    #     for rec in self: 
-    #         start_time = datetime.min.time()
-    #         start_date = datetime.combine(rec.date_from, start_time)
-    #         end_time = datetime.max.time()
-    #         end_date = datetime.combine(rec.date_to, end_time)         
-    #         po_lines = self.env['purchase.order.line'].search([
-    #             ('account_analytic_id','=', rec.analytic_account_id.id),
-    #             ('order_id.state','in', ['draft','sent','to approve', 'to reapprove']),
-    #             ('date_promised', '>=', start_date ),
-    #             ('date_promised', '<=', end_date )
-    #         ])
-    #         total_burden = 0.0
-    #         for po_line in po_lines:
-    #             if po_line.product_qty != 0:
-    #                 units = (po_line.product_qty - po_line.qty_invoiced)
-    #                 total_burden += po_line.price_unit * units
-    #         rec.draft_burden = total_burden
 
 
 
