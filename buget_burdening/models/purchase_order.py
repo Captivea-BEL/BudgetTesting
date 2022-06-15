@@ -19,6 +19,9 @@
 
 from odoo import models, fields, api
 from datetime import datetime
+import logging
+_logger = logging.getLogger(__name__)
+
 
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
@@ -49,39 +52,42 @@ class PurchaseOrder(models.Model):
             po_date = datetime.combine(self.date_promised, min_time)
             budget = self.env['crossovered.budget.lines'].search([
                 ('analytic_account_id','=', self.account_analytic_id.id),
-                ('date_from', '>=', po_date ),
-                ('date_to', '<=', po_date )
+                ('date_from', '<=', po_date ),
+                ('date_to', '>=', po_date )
             ])
+            
             if budget:
                 po_lines = self.env['purchase.order.line'].search([
-                    ('account_analytic_id','=', budget.analytic_account_id.id),                    
+                    ('account_analytic_id.id','=', budget.analytic_account_id.id),                    
                     ('date_promised', '>=', budget.date_from ),
                     ('date_promised', '<=', budget.date_to )
                 ])
-                budget.draft_burden = self.sum_lines(po_lines.filtered(lambda line: line.order_id.state in ['draft','sent','to approve', 'to reapprove']))
-                budget.approved_burden = self.sum_lines(po_lines.filtered(lambda line: line.order_id.state in ['approved']))
-                budget.released_burden = po_lines.filtered(lambda line: line.order_id.state in ['purchase'])
-                budget.closed_burden = po_lines.filtered(lambda line: line.order_id.state in ['done', 'closed'])
-                budget.abs_theoritical_amount = abs(budget.abs_theoritical_amount)
-                budget.abs_practical_amount = abs(budget.abs_practical_amount)
-                budget.abs_planned_amount = abs(budget.abs_planned_amount)
+                draft = 0
+                approved = 0
+                released = 0
+                closed = 0
+                total = 0
                 
-                
-                budget.total_burden = budget.draft_burden + budget.approved_burden + budget.released_burden + budget.closed_burden + budget.practical
-
-    def sum_lines(po_lines):
-        total_burden = 0.0
-        for po_line in po_lines:
-            if po_line.product_qty != 0:
-                units = (po_line.product_qty - po_line.qty_invoiced)
-                total_burden += po_line.price_unit * units
-        return total_burden
-
-
-
-
-
-
-
-
-
+                for po_line in po_lines:
+                    amount = 0
+                    if po_line.product_qty != 0:
+                        units = (po_line.product_qty - po_line.qty_invoiced)
+                        amount = po_line.price_unit * units
+                    total += amount
+                    if po_line.order_id.state in ['draft','sent','to approve', 'to reapprove']:
+                        draft += amount
+                    if po_line.order_id.state in ['approved']:
+                        approved += amount
+                    if po_line.order_id.state in ['done', 'closed']:
+                        closed += amount
+                    if po_line.order_id.state in ['purchase']:
+                        released += amount
+                    _logger.info(str(amount))
+                budget.draft_burden = draft
+                budget.approved_burden = approved
+                budget.closed_burden = closed
+                budget.released_burden = released
+                budget.total_burden = total
+                budget.abs_theoritical_amount = abs(budget.theoritical_amount)
+                budget.abs_practical_amount = abs(budget.practical_amount)
+                budget.abs_planned_amount = abs(budget.planned_amount)

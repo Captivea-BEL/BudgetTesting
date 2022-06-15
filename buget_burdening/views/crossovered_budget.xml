@@ -40,4 +40,24 @@
         </record>
     </data>
 
+    <data>
+        <record id="view_budget_enhancement_pivot" model="ir.ui.view">
+            <field name="name">account.budget.enhancement.pivot</field>
+            <field name="model">crossovered.budget.lines</field>
+            <field name="inherit_id" ref="account_budget.view_crossovered_budget_line_pivot"/>
+            <field name="arch" type="xml">
+            <xpath expr="//field[@name='percentage']" position="after">
+                <field name="abs_planned_amount" type="measure"/>
+                <field name="abs_practical_amount" type="measure"/>
+                <field name="abs_theoritical_amount" type="measure"/>
+                <field name="approved_burden" type="measure"/>
+                <field name="closed_burden" type="measure"/>
+                <field name="draft_burden" type="measure"/>
+                <field name="released_burden" type="measure"/>
+                <field name="total_burden" type="measure"/>
+            </xpath>
+            </field>
+        </record>
+    </data>
+
 </odoo>
