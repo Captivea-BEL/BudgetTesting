@@ -17,8 +17,7 @@
 #
 ########################################################################################
 
-from odoo import models, fields, api
-from datetime import datetime
+from odoo import models, fields
 
 class Budget(models.Model):
     _inherit = 'crossovered.budget.lines'
