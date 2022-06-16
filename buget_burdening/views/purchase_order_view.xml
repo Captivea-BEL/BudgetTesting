@@ -10,7 +10,7 @@
                     <field name="date_promised"/>
                 </xpath>  
                 <xpath expr="//field[@name='state']" position="replace" >
-                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,to approve,purchase,released,done" readonly="1"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,to approve,to reapprove,approved,purchase,released,done,closed" readonly="1"/>
                 </xpath>
             </field>
         </record>

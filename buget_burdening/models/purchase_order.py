@@ -19,9 +19,6 @@
 
 from odoo import models, fields, api
 from datetime import datetime
-import logging
-_logger = logging.getLogger(__name__)
-
 
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
@@ -36,11 +33,20 @@ class PurchaseOrder(models.Model):
     ('cancel', 'Cancelled'),
     ('revised', 'Revised'),
     ('done', 'Locked'),
-    ('closed', 'Closed'),
-    
+    ('closed', 'Closed'),    
     ], string='Status', readonly=True, index=True, copy=False, default='draft', tracking=True)
 
-class PurchaseOrder(models.Model):
+    def write(self, vals):
+        vals, partner_vals = self._write_partner_values(vals)
+        res = super().write(vals)
+        if partner_vals:
+            self.partner_id.sudo().write(partner_vals)  
+        if 'state' in vals:
+            for po_line in self.order_line:
+                po_line.onchange_budget_burden()
+        return res
+
+class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
     date_promised = fields.Date(string='Promise Date', required=True, copy=True)
@@ -50,13 +56,10 @@ class PurchaseOrder(models.Model):
         if self.date_promised and self.price_total and self.account_analytic_id:
             min_time = datetime.min.time()
             po_date = datetime.combine(self.date_promised, min_time)
-            budget = self.env['crossovered.budget.lines'].search([
-                ('analytic_account_id','=', self.account_analytic_id.id),
-                ('date_from', '<=', po_date ),
-                ('date_to', '>=', po_date )
+            budgets = self.env['crossovered.budget.lines'].search([
+                ('analytic_account_id','=', self.account_analytic_id.id)
             ])
-            
-            if budget:
+            for budget in budgets:
                 po_lines = self.env['purchase.order.line'].search([
                     ('account_analytic_id.id','=', budget.analytic_account_id.id),                    
                     ('date_promised', '>=', budget.date_from ),
@@ -82,12 +85,8 @@ class PurchaseOrder(models.Model):
                         closed += amount
                     if po_line.order_id.state in ['purchase']:
                         released += amount
-                    _logger.info(str(amount))
                 budget.draft_burden = draft
                 budget.approved_burden = approved
                 budget.closed_burden = closed
                 budget.released_burden = released
                 budget.total_burden = total
-                budget.abs_theoritical_amount = abs(budget.theoritical_amount)
-                budget.abs_practical_amount = abs(budget.practical_amount)
-                budget.abs_planned_amount = abs(budget.planned_amount)
