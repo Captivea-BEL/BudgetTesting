@@ -41,24 +41,39 @@ class PurchaseOrder(models.Model):
         res = super().write(vals)
         if partner_vals:
             self.partner_id.sudo().write(partner_vals)  
-        if 'state' in vals:
-            for po_line in self.order_line:
-                po_line.onchange_budget_burden()
+        ####################################
+        self.env['purchase.order.line'].set_burden_vals(self.order_line)
+        ###################################
+        return res
+    
+    @api.model
+    def create(self, vals):
+        company_id = vals.get('company_id', self.default_get(['company_id'])['company_id'])
+        self_comp = self.with_company(company_id)
+        if vals.get('name', 'New') == 'New':
+            seq_date = None
+            if 'date_order' in vals:
+                seq_date = fields.Datetime.context_timestamp(self, fields.Datetime.to_datetime(vals['date_order']))
+            vals['name'] = self_comp.env['ir.sequence'].next_by_code('purchase.order', sequence_date=seq_date) or '/'
+        vals, partner_vals = self._write_partner_values(vals)
+        res = super(PurchaseOrder, self_comp).create(vals)
+        ###################################
+        self.env['purchase.order.line'].set_burden_vals(res.order_line)
+        ###################################
+        if partner_vals:
+            res.sudo().write(partner_vals) 
         return res
 
 class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
     date_promised = fields.Date(string='Promise Date', required=True, copy=True)
-
-    @api.onchange('date_promised','price_total','account_analytic_id')
-    def onchange_budget_burden(self):
-        if self.date_promised and self.price_total and self.account_analytic_id:
-            min_time = datetime.min.time()
-            po_date = datetime.combine(self.date_promised, min_time)
+    
+    def set_burden_vals(self, input_lines):
+        for line in input_lines:
             budgets = self.env['crossovered.budget.lines'].search([
-                ('analytic_account_id','=', self.account_analytic_id.id)
-            ])
+                ('analytic_account_id','=', line.account_analytic_id.id)
+                ])
             for budget in budgets:
                 po_lines = self.env['purchase.order.line'].search([
                     ('account_analytic_id.id','=', budget.analytic_account_id.id),                    
@@ -70,7 +85,7 @@ class PurchaseOrderLine(models.Model):
                 released = 0
                 closed = 0
                 total = 0
-                
+
                 for po_line in po_lines:
                     amount = 0
                     if po_line.product_qty != 0:
@@ -85,8 +100,9 @@ class PurchaseOrderLine(models.Model):
                         closed += amount
                     if po_line.order_id.state in ['purchase']:
                         released += amount
+                _logger.info('draftt is ' + str(draft) + " budget is " + budget.name + " date from is " + str(budget.date_from))
                 budget.draft_burden = draft
                 budget.approved_burden = approved
                 budget.closed_burden = closed
                 budget.released_burden = released
-                budget.total_burden = total
+                budget.total_burden = total 

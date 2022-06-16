@@ -46,15 +46,18 @@ class CrossoveredBudgetLines(models.Model):
       
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
+        ###################################
         budgets = self.env['crossovered.budget.lines'].search([])
         for budget in budgets:
             if abs(budget.abs_practical_amount) != abs(budget.practical_amount):
                 budget.abs_practical_amount = abs(budget.practical_amount)
             if abs(budget.abs_theoritical_amount) != abs(budget.theoritical_amount):
                 budget.abs_theoritical_amount = abs(budget.theoritical_amount)
+            budget.total_burden = budget.draft_burden + budget.approved_burden + budget.released_burden + budget.closed_burden + budget.abs_practical_amount
             
         fields_list = {'practical_amount', 'theoritical_amount', 'percentage', 'bs_theoritical_amount', 'abs_practical_amount'}
-
+        ###################################
+        
         def truncate_aggr(field):
             field_no_aggr = field.split(':', 1)[0]
             if field_no_aggr in fields_list:
@@ -68,10 +71,12 @@ class CrossoveredBudgetLines(models.Model):
 
         if fields & fields_list:
             for group_line in result:
+                ###################################
                 if 'abs_practical_amount' in fields:
                     group_line['abs_practical_amount'] = 0
                 if 'abs_theoritical_amount' in fields:
                     group_line['abs_theoritical_amount'] = 0
+                ###################################
                 if 'practical_amount' in fields:
                     group_line['practical_amount'] = 0
                 if 'theoritical_amount' in fields:
@@ -85,12 +90,13 @@ class CrossoveredBudgetLines(models.Model):
                 all_budget_lines_that_compose_group = self.search(domain)
 
                 for budget_line_of_group in all_budget_lines_that_compose_group:
+                    ###################################
                     if 'abs_practical_amount' in fields:
                         group_line['abs_practical_amount'] += budget_line_of_group.abs_practical_amount
                     
                     if 'abs_theoritical_amount' in fields:
                         group_line['abs_theoritical_amount'] += budget_line_of_group.abs_theoritical_amount
-                    
+                    ###################################
                     if 'practical_amount' in fields or 'percentage' in fields:
                         group_line['practical_amount'] += budget_line_of_group.practical_amount
 
