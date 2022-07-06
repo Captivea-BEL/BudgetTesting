@@ -14,7 +14,8 @@ class ProductTemplate(models.Model):
 
     def get_http(self):
         url = self.img_url
-        var = base64.b64encode(requests.get(url).content)
-        self.image_1920 = var
+        if url:
+            var = base64.b64encode(requests.get(url).content)
+            self.image_1920 = var
 
 
