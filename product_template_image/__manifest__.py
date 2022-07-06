@@ -10,7 +10,7 @@
     'license': 'OPL-1',
     'description': """Gets images from Http field
         """,
-    'depends': ['inventory'],
+    'depends': ['stock'],
     'data': [
     ],
     'installable': True,
